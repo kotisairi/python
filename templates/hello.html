@@ -1,14 +1,27 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
-    <title>hello</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Hello Realtime</title>
 </head>
-   <body>
+<body>
+    <main>
+        <h2>Hello, {{ name }}!</h2>
+        <!-- Target ID for the dynamic Javascript UI update -->
+        <p>This site has been visited <strong id="live-count">Connecting...</strong> times.</p>
+    </main>
 
-      <h2>Hello {{ name }}!</h2>
-      <p>This site has been visited {{ count }} times.</p>
+    <!-- Establish Real-time client-to-server connection -->
+    <script src="https://socket.io"></script>
+    <script>
+        const socket = io();
 
-   </body>
+        // Listen for the "count_update" signal from the Python server
+        socket.on('count_update', function(data) {
+            document.getElementById('live-count').innerText = data.count;
+        });
+    </script>
+</body>
 </html>
