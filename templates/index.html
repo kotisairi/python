@@ -1,14 +1,41 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <title>Welcome</title>
+    <title>Real-Time Flask App</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 <body>
-    <main>
-        <h1>Welcome to Flask APP</h1>
-    </main>
+
+<main class="card">
+    <h1>🚀 Real-Time Flask App</h1>
+
+    <p>Current online users</p>
+
+    <div id="count" class="counter">
+        {{ count }}
+    </div>
+
+    <p class="hint">
+        Open this page in another browser tab or mobile device.
+        The number will update instantly without refreshing.
+    </p>
+</main>
+
+<script>
+    const socket = io();
+
+    socket.on('count_update', function(data) {
+        document.getElementById('count').innerText = data.count;
+    });
+</script>
+
 </body>
 </html>
+```
