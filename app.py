@@ -1,3 +1,4 @@
+```python
 import os
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
@@ -5,46 +6,67 @@ from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
 
-# Production Database & Security Configuration
+# Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'super-secure-production-key-fallback')
+app.config['SECRET_KEY'] = os.environ.get(
+    'SECRET_KEY',
+    'super-secure-production-key-fallback'
+)
 
-# Initialize safe relational storage & async real-time server engine
+# Real-time engine
 db = SQLAlchemy(app)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+socketio = SocketIO(app, cors_allowed_origins='*', async_mode='gevent')
 
-# Thread-safe database counter model
+# Database model
 class VisitorMetric(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     count = db.Column(db.Integer, default=0, nullable=False)
 
-# Bootstrap database table on startup
+# Create DB and initial row
 with app.app_context():
     db.create_all()
+
     if not VisitorMetric.query.first():
         db.session.add(VisitorMetric(count=0))
         db.session.commit()
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    metric = VisitorMetric.query.first()
+
+    return render_template('index.html', count=metric.count)
 
 @app.route('/hello/<name>')
 def hello_name(name):
-    # Render UI layout once. Socket.IO will handle the real-time data layer next.
-    return render_template('hello.html', name=name)
+    metric = VisitorMetric.query.first()
 
-# Triggered immediately when a user hits or opens the page
+    return render_template(
+        'hello.html',
+        name=name,
+        count=metric.count
+    )
+
+# Real-time connect event
 @socketio.on('connect')
 def handle_connect():
     metric = VisitorMetric.query.first()
     metric.count += 1
     db.session.commit()
-    
-    # BROADCAST: Pushes the updated number instantly to ALL connected devices
+
+    emit('count_update', {'count': metric.count}, broadcast=True)
+
+# Real-time disconnect event
+@socketio.on('disconnect')
+def handle_disconnect():
+    metric = VisitorMetric.query.first()
+
+    if metric.count > 0:
+        metric.count -= 1
+        db.session.commit()
+
     emit('count_update', {'count': metric.count}, broadcast=True)
 
 if __name__ == '__main__':
-    # Local fallback runner (Docker skips this and runs Gunicorn directly)
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+```
