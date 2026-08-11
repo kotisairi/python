@@ -1,27 +1,36 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <title>Hello Realtime</title>
+    <title>Hello {{ name }}</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 <body>
-    <main>
-        <h2>Hello, {{ name }}!</h2>
-        <!-- Target ID for the dynamic Javascript UI update -->
-        <p>This site has been visited <strong id="live-count">Connecting...</strong> times.</p>
-    </main>
 
-    <!-- Establish Real-time client-to-server connection -->
-    <script src="https://socket.io"></script>
-    <script>
-        const socket = io();
+<main class="card">
+    <h1>Hello, {{ name }} 👋</h1>
 
-        // Listen for the "count_update" signal from the Python server
-        socket.on('count_update', function(data) {
-            document.getElementById('live-count').innerText = data.count;
-        });
-    </script>
+    <p>Current online users</p>
+
+    <div id="count" class="counter">
+        {{ count }}
+    </div>
+</main>
+
+<script>
+    const socket = io();
+
+    socket.on('count_update', function(data) {
+        document.getElementById('count').innerText = data.count;
+    });
+</script>
+
 </body>
 </html>
+```
