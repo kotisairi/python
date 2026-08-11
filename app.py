@@ -1,8 +1,7 @@
-
 import os
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO
 
 app = Flask(__name__)
 
@@ -14,9 +13,14 @@ app.config['SECRET_KEY'] = os.environ.get(
     'super-secure-production-key-fallback'
 )
 
-# Real-time engine
+# Socket.IO configuration
+socketio = SocketIO(
+    app,
+    cors_allowed_origins='*',
+    async_mode='gevent'
+)
+
 db = SQLAlchemy(app)
-socketio = SocketIO(app, cors_allowed_origins='*', async_mode='gevent')
 
 # Database model
 class VisitorMetric(db.Model):
@@ -34,38 +38,37 @@ with app.app_context():
 @app.route('/')
 def index():
     metric = VisitorMetric.query.first()
-
     return render_template('index.html', count=metric.count)
 
 @app.route('/hello/<name>')
 def hello_name(name):
     metric = VisitorMetric.query.first()
+    return render_template('hello.html', name=name, count=metric.count)
 
-    return render_template(
-        'hello.html',
-        name=name,
-        count=metric.count
-    )
-
-# Real-time connect event
+# When a browser connects
 @socketio.on('connect')
 def handle_connect():
+    print('Client connected')
+
     metric = VisitorMetric.query.first()
     metric.count += 1
     db.session.commit()
 
-    emit('count_update', {'count': metric.count}, broadcast=True)
+    socketio.emit('count_update', {'count': metric.count})
 
-# Real-time disconnect event
+# When a browser disconnects
 @socketio.on('disconnect')
 def handle_disconnect():
+    print('Client disconnected')
+
     metric = VisitorMetric.query.first()
 
     if metric.count > 0:
         metric.count -= 1
         db.session.commit()
 
-    emit('count_update', {'count': metric.count}, broadcast=True)
+    socketio.emit('count_update', {'count': metric.count})
 
+# Local run (not used by Gunicorn, but keep it)
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
