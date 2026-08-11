@@ -10,8 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app/
 
-# Expose production port inside container
 EXPOSE 8000
 
-# Use eventlet worker class to sustain persistent WebSocket connection channels
-CMD ["gunicorn", "--worker-class", "eventlet", "--workers", "1", "--bind", "0.0.0.0:8000", "app:app"]
+# Use the Gevent WebSocket worker class to run real-time pipelines securely
+CMD ["gunicorn", "-k", "geventwebsocket.gunicorn.workers.GeventWebSocketWorker", "--workers", "1", "--bind", "0.0.0.0:8000", "app:app"]
