@@ -1,17 +1,28 @@
-h1 {
-    border: 2px #eee solid;
-    color: brown;
-    text-align: center;
-    padding: 10px;
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
 }
 
-h2 {
-    border: 2px #eee solid;
-    color: blue;
+main {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     text-align: center;
-    padding: 10px;
 }
- p {
-        font-size: 15pt;
-        text-align: right;
-    }
+
+h1, h2 {
+    color: #2c3e50;
+    margin-top: 0;
+}
+
+strong {
+    color: #e74c3c;
+    font-size: 1.2em;
+}
