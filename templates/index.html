@@ -14,28 +14,57 @@
 <body>
 
 <main class="card">
-    <h1>🚀 Real-Time Flask App</h1>
-
-    <p>Current online users</p>
-
-    <div id="count" class="counter">
-        {{ count }}
+   <!DOCTYPE html>
+<html>
+<head>
+    <title>Real-Time Flask App</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        body{
+            font-family:Arial,sans-serif;
+            background:#f2f2f2;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            height:100vh;
+            margin:0;
+        }
+        .card{
+            background:white;
+            padding:40px;
+            border-radius:16px;
+            box-shadow:0 4px 12px rgba(0,0,0,0.2);
+            text-align:center;
+            width:420px;
+        }
+        .counter{
+            font-size:72px;
+            color:green;
+            font-weight:bold;
+            margin:20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🚀 Real-Time Flask App</h1>
+        <p>Current online users</p>
+        <div id="count" class="counter">{{ count }}</div>
     </div>
 
-    <p class="hint">
-        Open this page in another browser tab or mobile device.
-        The number will update instantly without refreshing.
-    </p>
-</main>
+    <script>
+        const socket = io(window.location.origin, {
+            transports: ['websocket', 'polling']
+        });
 
-<script>
-    const socket = io();
+        socket.on('connect', function () {
+            console.log('Socket connected');
+        });
 
-    socket.on('count_update', function(data) {
-        document.getElementById('count').innerText = data.count;
-    });
-</script>
-
+        socket.on('count_update', function (data) {
+            console.log('Count update:', data.count);
+            document.getElementById('count').innerText = data.count;
+        });
+    </script>
 </body>
 </html>
-
